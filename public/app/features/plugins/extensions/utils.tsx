@@ -553,3 +553,38 @@ export const isExposedComponentMetaInfoMissing = (
 
   return false;
 };
+
+export const getAppConfigs = (pluginIds: string[] = []) =>
+  Object.values(config.apps).filter((app) => pluginIds.includes(app.id));
+
+// Returns a list of app plugin ids that are registering extensions to the extension point
+export const getAppPluginsForExtensionPoint = (extensionPointId: string) => {
+  return Object.values(config.apps)
+    .filter(
+      (app) =>
+        app.extensions.addedLinks.some((link) => link.targets.includes(extensionPointId)) ||
+        app.extensions.addedComponents.some((component) => component.targets.includes(extensionPointId))
+    )
+    .map((app) => app.id);
+};
+
+// Returns an app plugin id that the component is exposed from
+export const getAppPluginForExposedComponent = (exposedComponentId: string) => {
+  return exposedComponentId.replace(/^plugins\//, '').split('/')[0];
+};
+
+// Returns a list of app plugin ids based on a plugins extension point dependencies
+// Recursive function!
+export const getAppPluginsByExtensionDependencies = (pluginId: string): string[] => {
+  if (!config.apps[pluginId]) {
+    return [];
+  }
+
+  const pluginIdDependencies = config.apps[pluginId].dependencies.extensions.exposedComponents.map(
+    getAppPluginForExposedComponent
+  );
+
+  return pluginIdDependencies.reduce((acc, dep) => {
+    return [...acc, ...getAppPluginsByExtensionDependencies(dep)];
+  }, pluginIdDependencies);
+};
