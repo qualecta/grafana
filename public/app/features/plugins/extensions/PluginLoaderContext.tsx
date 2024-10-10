@@ -3,7 +3,7 @@ import { PropsWithChildren, createContext, useCallback, useContext, useEffect, u
 import { preloadPlugins } from '../pluginPreloader';
 
 import { PluginExtensionRegistries } from './registry/types';
-import { getAppConfigs } from './utils';
+import { getAppPluginConfigs } from './utils';
 
 export type PluginLoaderContextType = {
   loadAppPlugins: (pluginIds: string[]) => void;
@@ -30,7 +30,7 @@ export const PluginLoaderContextProvider = ({
   const [isLoading, setIsLoading] = useState(false);
   const loadAppPlugins = useCallback(
     (pluginIds: string[] = []) => {
-      const appConfigs = getAppConfigs(pluginIds);
+      const appConfigs = getAppPluginConfigs(pluginIds);
 
       if (!appConfigs.length) {
         return;

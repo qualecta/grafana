@@ -12,7 +12,7 @@ import { useAddedLinksRegistry } from './ExtensionRegistriesContext';
 import { useLoadAppPlugins } from './useLoadAppPlugins';
 import {
   generateExtensionId,
-  getAppPluginsForExtensionPoint,
+  getExtensionPointPluginDependencies,
   getLinkExtensionOnClick,
   getLinkExtensionOverrides,
   getLinkExtensionPathWithTracking,
@@ -32,7 +32,7 @@ export function usePluginLinks({
   const registry = useAddedLinksRegistry();
   const pluginContext = usePluginContext();
   const registryState = useObservable(registry.asObservable());
-  const { isLoading: isLoadingAppPlugins } = useLoadAppPlugins(getAppPluginsForExtensionPoint(extensionPointId));
+  const { isLoading: isLoadingAppPlugins } = useLoadAppPlugins(getExtensionPointPluginDependencies(extensionPointId));
 
   return useMemo(() => {
     // For backwards compatibility we don't enable restrictions in production or when the hook is used in core Grafana.
