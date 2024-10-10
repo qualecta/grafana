@@ -14,8 +14,14 @@ export type PluginPreloadResult = {
   addedLinkConfigs?: PluginExtensionAddedLinkConfig[];
 };
 
+// The list of already preloaded plugin ids.
+// (We only want to preload plugins once, as we would like to avoid error messages caused by
+// registering extensions multiple times.)
+const preloadedPluginsCache = new Set<string>();
+
 export async function preloadPlugins(apps: AppPluginConfig[] = [], registries: PluginExtensionRegistries) {
-  const promises = apps.map((config) => preload(config));
+  const isNotPreloaded = ({ id }: AppPluginConfig) => !preloadedPluginsCache.has(id);
+  const promises = apps.filter(isNotPreloaded).map((config) => preload(config));
   const preloadedPlugins = await Promise.all(promises);
 
   for (const preloadedPlugin of preloadedPlugins) {
