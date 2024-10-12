@@ -45,7 +45,7 @@ RUN if grep -i -q alpine /etc/issue; then \
           # This is required to allow building on arm64 due to https://github.com/golang/go/issues/22040
           binutils-gold \
           # Install build dependencies
-          gcc g++ make git; \
+          gcc g++ make git bash; \
     fi
 
 WORKDIR /tmp/grafana
