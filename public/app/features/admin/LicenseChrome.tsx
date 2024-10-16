@@ -57,7 +57,7 @@ export function LicenseChrome({ header, editionNotice, subheader, children }: Pr
         >
           <img
             src="public/img/grafana_icon.svg"
-            alt="Grafana"
+            alt="Qualecta"
             width="80px"
             style={{ position: 'absolute', left: '23px', top: '20px' }}
           />
