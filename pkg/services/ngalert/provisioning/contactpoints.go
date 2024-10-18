@@ -38,7 +38,13 @@ type ContactPointService struct {
 	xact                      TransactionManager
 	receiverService           receiverService
 	log                       log.Logger
-	resourcePermissions       ac.ReceiverPermissionsService
+	resourcePermissions       receiverPermissionsService
+}
+
+type receiverPermissionsService interface {
+	DeleteResourcePermissionsByUID(ctx context.Context, orgID int64, uid string) error
+	SetDefaultPermissions(ctx context.Context, orgID int64, user identity.Requester, uid string)
+	CopyPermissions(ctx context.Context, orgID int64, user identity.Requester, oldUID, newUID string) (int, error)
 }
 
 type receiverService interface {
@@ -327,7 +333,7 @@ func (ecp *ContactPointService) UpdateContactPoint(ctx context.Context, orgID in
 				if err := ecp.receiverService.RenameReceiverInDependentResources(ctx, orgID, revision.Config.AlertmanagerConfig.Route, oldReceiverName, mergedReceiver.Name, provenance); err != nil {
 					return err
 				}
-				if err := ecp.resourcePermissions.DeleteResourcePermissions(ctx, orgID, legacy_storage.NameToUid(oldReceiverName)); err != nil {
+				if err := ecp.resourcePermissions.DeleteResourcePermissionsByUID(ctx, orgID, legacy_storage.NameToUid(oldReceiverName)); err != nil {
 					return err
 				}
 			}
@@ -390,7 +396,7 @@ func (ecp *ContactPointService) DeleteContactPoint(ctx context.Context, orgID in
 
 			// Compatibility with new receiver resource permissions.
 			// We need to cleanup resource permissions.
-			if err := ecp.resourcePermissions.DeleteResourcePermissions(ctx, orgID, legacy_storage.NameToUid(name)); err != nil {
+			if err := ecp.resourcePermissions.DeleteResourcePermissionsByUID(ctx, orgID, legacy_storage.NameToUid(name)); err != nil {
 				ecp.log.Error("Could not delete receiver permissions", "receiverName", name, "error", err)
 			}
 		}

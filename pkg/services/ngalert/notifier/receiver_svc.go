@@ -49,8 +49,14 @@ type ReceiverService struct {
 	xact                   transactionManager
 	log                    log.Logger
 	provenanceValidator    validation.ProvenanceStatusTransitionValidator
-	resourcePermissions    ac.ReceiverPermissionsService
+	resourcePermissions    receiverPermissionsService
 	tracer                 tracing.Tracer
+}
+
+type receiverPermissionsService interface {
+	DeleteResourcePermissionsByUID(ctx context.Context, orgID int64, uid string) error
+	SetDefaultPermissions(ctx context.Context, orgID int64, user identity.Requester, uid string)
+	CopyPermissions(ctx context.Context, orgID int64, user identity.Requester, oldUID, newUID string) (int, error)
 }
 
 type alertRuleNotificationSettingsStore interface {
@@ -377,7 +383,7 @@ func (rs *ReceiverService) DeleteReceiver(ctx context.Context, uid string, calle
 		if err != nil {
 			return err
 		}
-		err = rs.resourcePermissions.DeleteResourcePermissions(ctx, orgID, uid)
+		err = rs.resourcePermissions.DeleteResourcePermissionsByUID(ctx, orgID, uid)
 		if err != nil {
 			logger.Error("Could not delete receiver permissions", "error", err)
 		}
@@ -540,7 +546,7 @@ func (rs *ReceiverService) UpdateReceiver(ctx context.Context, r *models.Receive
 			if permissionsUpdated > 0 {
 				logger.Info("Moved custom receiver permissions", "oldName", existing.Name, "count", permissionsUpdated)
 			}
-			if err := rs.resourcePermissions.DeleteResourcePermissions(ctx, orgID, legacy_storage.NameToUid(existing.Name)); err != nil {
+			if err := rs.resourcePermissions.DeleteResourcePermissionsByUID(ctx, orgID, legacy_storage.NameToUid(existing.Name)); err != nil {
 				return err
 			}
 		}

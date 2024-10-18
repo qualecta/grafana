@@ -421,7 +421,7 @@ func (moa *MultiOrgAlertmanager) cleanPermissions(ctx context.Context, orgID int
 
 	var errs []error
 	for receiverName := range previousReceiverNames.Difference(newReceiverNames) { // Deleted receivers.
-		if err := moa.receiverResourcePermissions.DeleteResourcePermissions(ctx, orgID, legacy_storage.NameToUid(receiverName)); err != nil {
+		if err := moa.receiverResourcePermissions.DeleteResourcePermissionsByUID(ctx, orgID, legacy_storage.NameToUid(receiverName)); err != nil {
 			errs = append(errs, fmt.Errorf("failed to delete permissions for receiver %s: %w", receiverName, err))
 		}
 	}

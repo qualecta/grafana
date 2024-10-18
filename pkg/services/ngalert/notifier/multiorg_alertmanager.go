@@ -102,7 +102,7 @@ type MultiOrgAlertmanager struct {
 	metrics *metrics.MultiOrgAlertmanager
 	ns      notifications.Service
 
-	receiverResourcePermissions ac.ReceiverPermissionsService
+	receiverResourcePermissions receiverPermissionsService
 }
 
 type OrgAlertmanagerFactory func(ctx context.Context, orgID int64) (Alertmanager, error)

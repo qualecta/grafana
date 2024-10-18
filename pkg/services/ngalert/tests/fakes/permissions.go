@@ -25,4 +25,8 @@ func (f FakeReceiverPermissionsService) CopyPermissions(ctx context.Context, org
 	return 0, nil
 }
 
+func (f FakeReceiverPermissionsService) DeleteResourcePermissionsByUID(ctx context.Context, orgID int64, uid string) error {
+	return nil
+}
+
 var _ accesscontrol.ReceiverPermissionsService = new(FakeReceiverPermissionsService)
