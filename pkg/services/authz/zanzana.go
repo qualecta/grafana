@@ -17,6 +17,7 @@ import (
 	"github.com/grafana/grafana/pkg/infra/tracing"
 	"github.com/grafana/grafana/pkg/services/authz/zanzana"
 	"github.com/grafana/grafana/pkg/services/authz/zanzana/client"
+	authzextv1 "github.com/grafana/grafana/pkg/services/authz/zanzana/proto/v1"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
 	"github.com/grafana/grafana/pkg/services/grpcserver"
 	"github.com/grafana/grafana/pkg/setting"
@@ -49,13 +50,14 @@ func ProvideZanzana(cfg *setting.Cfg, db db.DB, features featuremgmt.FeatureTogg
 			return nil, fmt.Errorf("failed to start zanzana: %w", err)
 		}
 
-		srv, err := zanzana.NewServer(cfg, store, logger)
+		openfgaSrv, err := zanzana.NewOpenFGAServer(cfg, store, logger)
 		if err != nil {
 			return nil, fmt.Errorf("failed to start zanzana: %w", err)
 		}
 
 		channel := &inprocgrpc.Channel{}
-		openfgav1.RegisterOpenFGAServiceServer(channel, srv)
+		openfgav1.RegisterOpenFGAServiceServer(channel, openfgaSrv)
+		authzextv1.RegisterAuthzExtentionServiceServer(channel, zanzana.NewAuthzServer(openfgaSrv))
 
 		client, err = zanzana.NewClient(context.Background(), channel, cfg)
 		if err != nil {
@@ -104,7 +106,7 @@ func (z *Zanzana) start(ctx context.Context) error {
 		return fmt.Errorf("failed to initilize zanana store: %w", err)
 	}
 
-	srv, err := zanzana.NewServer(z.cfg, store, z.logger)
+	srv, err := zanzana.NewOpenFGAServer(z.cfg, store, z.logger)
 	if err != nil {
 		return fmt.Errorf("failed to start zanzana: %w", err)
 	}
